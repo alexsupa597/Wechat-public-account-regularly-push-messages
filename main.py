@@ -1,4 +1,3 @@
-import os
 import math
 import random
 import requests
@@ -9,25 +8,46 @@ from wechatpy.client.api import WeChatMessage, WeChatTemplate
 
 today = datetime.now()
 
-# 微信公众测试号ID和SECRET
-app_id = os.environ["APP_ID"]
-app_secret = os.environ["APP_SECRET"]
+# ================= 配置区：直接写死在代码里 =================
+# 按需修改下面这些变量，改完后直接运行 main.py 即可，无需再配置环境变量
 
-# 可把os.environ结果替换成字符串在本地调试
-user_ids = os.environ["USER_ID"].split(',')
-template_ids = os.environ["TEMPLATE_ID"].split(',')
-citys = os.environ["CITY"].split(',')
-solarys = os.environ["SOLARY"].split(',')
-start_dates = os.environ["START_DATE"].split(',')
-birthdays = os.environ["BIRTHDAY"].split(',')
+# 微信公众测试号 ID 和 SECRET
+app_id = "wx1bfe24456f42265e"  # TODO: 换成你自己的 APP_ID
+app_secret = "69ee78c956fb65a66a14dd7dc46ce4d0"  # TODO: 换成你自己的 APP_SECRET
+
+# 接收消息的用户 openid，可以配置多个
+user_ids = [
+    "onAX62HScnqzOaZ_0pgRonNOYELc",  # TODO: 换成你自己的用户 openid
+]
+
+# 对应的模板 ID，可以配置多个，与 user_ids 一一对应
+template_ids = [
+    "3973oHlYC7Z1T3aylYk1CtYAA-EK3NZDNmj-jGwJIwQ",  # TODO: 换成你自己的模板 ID
+]
+
+# 城市列表（与 user_ids 一一对应），例如 ["北京"] 或 ["北京", "上海"]
+citys = ["北京"]
+
+# 发工资日（字符串），例如 ["10"] 表示每月 10 号
+solarys = ["10"]
+
+# 纪念日开始日期（YYYY-MM-DD），例如 ["2020-01-01"]
+start_dates = ["2020-01-01"]
+
+# 生日（MM-DD），例如 ["08-08"]
+birthdays = ["08-08"]
+# ==========================================================
 
 
 # 获取天气和温度
 def get_weather(city):
-    url = "http://autodev.openspeech.cn/csp/api/v2.1/weather?openId=aiuicus&clientType=android&sign=android&city=" + city
+    url = (
+        "http://autodev.openspeech.cn/csp/api/v2.1/weather?openId=aiuicus&clientType=android&sign=android&city="
+        + city
+    )
     res = requests.get(url).json()
-    weather = res['data']['list'][0]
-    return weather['weather'], math.floor(weather['temp'])
+    weather = res["data"]["list"][0]
+    return weather["weather"], math.floor(weather["temp"])
 
 
 # 当前城市、日期
@@ -43,7 +63,10 @@ def get_count(start_date):
 
 # 距离发工资还有多少天
 def get_solary(solary):
-    next = datetime.strptime(str(date.today().year) + "-" + str(date.today().month) + "-" + solary, "%Y-%m-%d")
+    next = datetime.strptime(
+        str(date.today().year) + "-" + str(date.today().month) + "-" + solary,
+        "%Y-%m-%d",
+    )
     if next < datetime.now():
         if next.month == 12:
             next = next.replace(year=next.year + 1)
@@ -64,7 +87,7 @@ def get_words():
     words = requests.get("https://api.shadiao.pro/chp")
     if words.status_code != 200:
         return get_words()
-    return words.json()['data']['text']
+    return words.json()["data"]["text"]
 
 
 # 字体随机颜色
@@ -82,15 +105,27 @@ for i in range(len(user_ids)):
         "date": {"value": "今日日期：{}".format(dat), "color": get_random_color()},
         "city": {"value": "当前城市：{}".format(cit), "color": get_random_color()},
         "weather": {"value": "今日天气：{}".format(wea), "color": get_random_color()},
-        "temperature": {"value": "当前温度：{}".format(tem), "color": get_random_color()},
-        "love_days": {"value": "今天是你们在一起的第{}天".format(get_count(start_dates[i])), "color": get_random_color()},
-        "birthday_left": {"value": "距离她的生日还有{}天".format(get_birthday(birthdays[i])), "color": get_random_color()},
-        "solary": {"value": "距离发工资还有{}天".format(get_solary(solarys[i])), "color": get_random_color()},
-        "words": {"value": get_words(), "color": get_random_color()}
+        "temperature": {
+            "value": "当前温度：{}".format(tem),
+            "color": get_random_color(),
+        },
+        "love_days": {
+            "value": "今天是你们在一起的第{}天".format(get_count(start_dates[i])),
+            "color": get_random_color(),
+        },
+        "birthday_left": {
+            "value": "距离她的生日还有{}天".format(get_birthday(birthdays[i])),
+            "color": get_random_color(),
+        },
+        "solary": {
+            "value": "距离发工资还有{}天".format(get_solary(solarys[i])),
+            "color": get_random_color(),
+        },
+        "words": {"value": get_words(), "color": get_random_color()},
     }
     if get_birthday(birthdays[i]) == 0:
-        data["birthday_left"]['value'] = "今天是她的生日哦，快去一起甜蜜吧"
+        data["birthday_left"]["value"] = "今天是她的生日哦，快去一起甜蜜吧"
     if get_solary(solarys[i]) == 0:
-        data["solary"]['value'] = "今天发工资啦，快去犒劳一下自己吧"
+        data["solary"]["value"] = "今天发工资啦，快去犒劳一下自己吧"
     res = wm.send_template(user_ids[i], template_ids[i], data)
     print(res)
