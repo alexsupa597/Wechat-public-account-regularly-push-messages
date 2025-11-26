@@ -42,12 +42,31 @@ birthdays = ["08-08"]
 # 获取天气和温度
 def get_weather(city):
     url = (
-        "http://autodev.openspeech.cn/csp/api/v2.1/weather?openId=aiuicus&clientType=android&sign=android&city="
-        + city
+        "http://autodev.openspeech.cn/csp/api/v2.1/weather"
+        "?openId=aiuicus&clientType=android&sign=android&city=" + city
     )
-    res = requests.get(url).json()
-    weather = res["data"]["list"][0]
-    return weather["weather"], math.floor(weather["temp"])
+    try:
+        res = requests.get(url, timeout=5)
+        res.raise_for_status()
+        data = res.json()
+    except Exception as e:
+        # 接口请求失败时，返回默认文案，避免程序直接报错退出
+        print(f"获取天气接口异常：{e}")
+        return "接口异常", 0
+
+    try:
+        weather = data["data"]["list"][0]
+        weather_text = weather.get("weather", "未知")
+        temp_raw = weather.get("temp", 0)
+        try:
+            temp_value = float(temp_raw)
+        except (TypeError, ValueError):
+            temp_value = 0
+        return weather_text, math.floor(temp_value)
+    except (KeyError, IndexError, TypeError) as e:
+        # 数据格式不符合预期时，给出兜底
+        print(f"解析天气数据失败：{e}，原始响应：{data}")
+        return "数据错误", 0
 
 
 # 当前城市、日期
