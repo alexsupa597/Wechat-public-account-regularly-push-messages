@@ -17,8 +17,8 @@ app_secret = "69ee78c956fb65a66a14dd7dc46ce4d0"  # TODO: 换成你自己的 APP_
 
 # 接收消息的用户 openid，可以配置多个
 user_ids = [
-    # "onAX62HScnqzOaZ_0pgRonNOYELc",  # TODO: 换成你自己的用户 openid
-    "gh_55e2bbccc684",  # TODO: 换成你自己的用户 openid
+    "onAX62HScnqzOaZ_0pgRonNOYELc",  # TODO: 换成你自己的用户 openid
+    # "gh_55e2bbccc684",  # TODO: 换成你自己的用户 openid
 ]
 
 # 对应的模板 ID，可以配置多个，与 user_ids 一一对应
